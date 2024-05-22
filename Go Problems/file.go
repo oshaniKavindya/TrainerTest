@@ -1,4 +1,4 @@
-/*package main
+package main
 
 import (
 	"fmt"
@@ -80,4 +80,3 @@ func writeResult(filePath, resultName string, resultValue int) error {
 	_, err = fmt.Fprintf(file, "%s: %d\n", resultName, resultValue)
 	return err
 }
-*/

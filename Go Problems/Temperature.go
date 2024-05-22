@@ -1,4 +1,4 @@
-/*package main
+package main
 
 import (
 	"fmt"
@@ -34,4 +34,4 @@ func celToFar (temp float64)float64{
 
 func farToCel (temp float64) float64{
 	return (temp-32)* 5/9
-}*/
+}

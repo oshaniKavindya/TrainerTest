@@ -1,4 +1,4 @@
-/*package main
+package main
 
 import (
 	"fmt"
@@ -24,4 +24,4 @@ func main(){
 		fmt.Println("Your are correct!\n The hidden number is ",number)
 	}
 }
-*/
+

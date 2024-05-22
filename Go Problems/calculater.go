@@ -1,4 +1,4 @@
-/*package main
+package main
 
 import (
 	"fmt"
@@ -40,4 +40,4 @@ func calculator(num1, num2 float64, operator string) float64 {
 			result= num1*num2
 		}
 		return result
-	}/*
+	}

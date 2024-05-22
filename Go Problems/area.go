@@ -1,4 +1,4 @@
-/*package main
+package main
 
 import (
 	"fmt"
@@ -15,4 +15,4 @@ func main(){
 
 	area := length * width
 	fmt.Printf("The area of the rectangle is : %.2f\n",area)
-}*/
+}

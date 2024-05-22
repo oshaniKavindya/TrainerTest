@@ -1,142 +1,80 @@
 package main
 
 import (
-	"log"
+	"net/http"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-// User represents a user in the system
+
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Age   int    `json:"age"`
+    Id       int    `json:"id"`
+    Name     string `json:"name"`
+    Email    string `json:"email"`
+    Age      int    `json:"age"`
 }
 
-// Global variable to store user data (in-memory storage for demonstration purposes)
-var users []User
+var users = []User{
+	{Id: 1, Name: "Anne", Email: "123@gmail.com", Age:20},
+	{Id: 2, Name: "Josaph", Email: "josap@gmail.com" , Age :15},
+	{Id: 3, Name: "Maria", Email: "M@gmail.com", Age:25},
+}
 
 func main() {
-	// Initialize Fiber app
 	app := fiber.New()
 
-	// Define routes
-	app.Post("/users", createUser)
-	app.Get("/users/:id", getUser)
-	app.Put("/users/:id", updateUser)
-	app.Delete("/users/:id", deleteUser)
 
-	// Start server
-	log.Fatal(app.Listen(":3000"))
-}
+	app.Get("/users", func(c *fiber.Ctx) error {
+		return c.Status(http.StatusOK).JSON(users)
+	})
 
-// Handler to create a new user
-func createUser(c *fiber.Ctx) error {
-	// Parse request body
-	var newUser User
-	if err := c.BodyParser(&newUser); err != nil {
-		return err
-	}
+	app.Post("/users", func(c *fiber.Ctx) error {
+		var newUser User
 
-	// Assign ID to the new user
-	newUser.ID = len(users) + 1
-
-	// Add user to the slice
-	users = append(users, newUser)
-
-	// Return success response
-	return c.Status(fiber.StatusCreated).JSON(newUser)
-}
-
-// Handler to get a user by ID
-func getUser(c *fiber.Ctx) error {
-	// Extract user ID from route parameters
-	userID, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return err
-	}
-
-	// Find user by ID
-	var foundUser *User
-	for _, user := range users {
-		if user.ID == userID {
-			foundUser = &user
-			break
+		if err := c.BodyParser(&newUser); err != nil {
+			c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+			return err
 		}
-	}
+		users = append(users, newUser)
+		return c.Status(http.StatusCreated).JSON(newUser)
+	})
 
-	// Check if user is found
-	if foundUser == nil {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User not found"})
-	}
+	app.Delete("/users/:id", func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, _:= strconv.Atoi(idStr)
 
-	// Return user data
-	return c.Status(fiber.StatusOK).JSON(foundUser)
-}
-
-// Handler to update a user by ID
-func updateUser(c *fiber.Ctx) error {
-	// Extract user ID from route parameters
-	userID, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return err
-	}
-
-	// Find user index by ID
-	var userIndex int = -1
-	for i, user := range users {
-		if user.ID == userID {
-			userIndex = i
-			break
+		for i, lang := range users {
+			if lang.Id == id {
+				users = append(users[:i], users[i+1:]...)
+				break
+			}
 		}
-	}
+		return c.Status(http.StatusNoContent).JSON(fiber.Map{"data": users})
 
-	// Check if user exists
-	if userIndex == -1 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User not found"})
-	}
+	})
 
-	// Parse request body
-	var updatedUser User
-	if err := c.BodyParser(&updatedUser); err != nil {
-		return err
-	}
-
-	// Update user data
-	users[userIndex] = updatedUser
-
-	// Return success response
-	return c.Status(fiber.StatusOK).JSON(updatedUser)
-}
-
-// Handler to delete a user by ID
-func deleteUser(c *fiber.Ctx) error {
-	// Extract user ID from route parameters
-	userID, err := strconv.Atoi(c.Params("id"))
-	if err != nil {
-		return err
-	}
-
-	// Find user index by ID
-	var userIndex int = -1
-	for i, user := range users {
-		if user.ID == userID {
-			userIndex = i
-			break
+	app.Put("/users/:id", func(c *fiber.Ctx) error {
+		idStr := c.Params("id")
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": "Invalid user ID"})
 		}
-	}
+		var updatedlanguage User
+		updatedlanguage.Id = id 
 
-	// Check if user exists
-	if userIndex == -1 {
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"message": "User not found"})
-	}
+		if err := c.BodyParser(&updatedlanguage); err != nil {
+			c.Status(http.StatusBadRequest).JSON(fiber.Map{"error": err.Error()})
+			return err
+		}
+		for i, lang := range users {
+			if lang.Id == updatedlanguage.Id {
+				users = append(users[:i], users[i+1:]...)
+				users = append(users, updatedlanguage)
+			}
+		}
+		return c.Status(http.StatusCreated).JSON(updatedlanguage)
+	})
 
-	// Remove user from the slice
-	users = append(users[:userIndex], users[userIndex+1:]...)
-
-	// Return success response
-	c.SendStatus(fiber.StatusNoContent)
-	return nil
+	app.Listen(":8080")
 }
